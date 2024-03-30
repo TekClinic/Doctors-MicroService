@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option go_package = "github.com/TekClinic/PHR_Doctors_MicroService/doctors_protobuf";
+
+package doctors;
+
+service DoctorService {
+  rpc GetDoctor(doctorRequest) returns (doctor);
+  rpc GetDoctorsIds(doctorsRequest) returns (PaginatedResponse);
+}
+
+message doctorRequest {
+  string token = 1;
+  int64 id = 2;
+}
+
+message doctorsRequest {
+  string token = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message PaginatedResponse {
+  int32 count = 1;
+  repeated int32 results = 2;
+}
+
+message doctor {
+
+  message PersonalId {
+    string id = 1;
+    string type = 2;
+  }
+
+  enum Gender {
+    UNSPECIFIED = 0;
+    MALE = 1;
+    FEMALE = 2;
+  }
+
+
+  int32 id = 1;
+  bool active = 2;
+  string name = 3;
+  PersonalId personal_id = 4;
+  Gender gender = 5;
+  string phone_number = 6;
+  repeated string languages = 7;
+  string birth_date = 8;
+  int32 age = 9;
+  string referred_by = 10;
+  string special_note = 11;
+}
