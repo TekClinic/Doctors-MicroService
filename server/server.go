@@ -3,9 +3,13 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"log"
+	"net"
+
+	dpb "github.com/TekClinic/Doctors-MicroService/doctors_protobuf"
 	ms "github.com/TekClinic/MicroService-Lib"
-	ppb "github.com/TekClinic/PHR_Doctors_MicroService/doctors_protobuf"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -13,13 +17,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
-	"net"
 )
 
-// doctorsServer is an implementation of GRPC doctor microservice. It provides access to database via db field
+// doctorsServer is an implementation of GRPC Doctor microservice. It provides access to database via db field.
 type doctorsServer struct {
-	ppb.UnimplementedDoctorServiceServer
+	dpb.UnimplementedDoctorServiceServer
 	ms.BaseServiceServer
 	db *bun.DB
 }
@@ -38,11 +40,11 @@ const (
 	maxPaginationLimit = 50
 )
 
-// Getdoctor returns a doctor that corresponds to the given id
-// Requires authentication. If authentication is not valid, codes.Unauthenticated is returned
-// Requires admin role. If roles is not sufficient, codes.PermissionDenied is returned
-// If doctor with a given id doesn't exist, codes.NotFound is returned
-func (server doctorsServer) Getdoctor(ctx context.Context, req *ppb.DoctorRequest) (*ppb.Doctor, error) {
+// GetDoctor returns a Doctor that corresponds to the given id.
+// Requires authentication. If authentication is not valid, codes.Unauthenticated is returned.
+// Requires admin role. If roles is not sufficient, codes.PermissionDenied is returned.
+// If Doctor with a given id doesn't exist, codes.NotFound is returned.
+func (server doctorsServer) GetDoctor(ctx context.Context, req *dpb.DoctorRequest) (*dpb.Doctor, error) {
 	claims, err := server.VerifyToken(ctx, req.GetToken())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
@@ -51,23 +53,24 @@ func (server doctorsServer) Getdoctor(ctx context.Context, req *ppb.DoctorReques
 		return nil, status.Error(codes.PermissionDenied, permissionDeniedMessage)
 	}
 
-	doctor := new(doctor)
-	err = server.db.NewSelect().Model(doctor).Where("? = ?", bun.Ident("id"), req.Id).Scan(ctx)
+	doctor := new(Doctor)
+	err = server.db.NewSelect().Model(doctor).Where("? = ?", bun.Ident("id"), req.GetId()).Scan(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Errorf("failed to fetch a user by id: %w", err).Error())
-	}
-	if doctor == nil {
-		return nil, status.Error(codes.NotFound, "User is not found")
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Error(codes.NotFound, "Doctor is not found")
+		}
+		return nil, status.Error(codes.Internal, fmt.Errorf("failed to fetch a doctor by id: %w", err).Error())
 	}
 	return doctor.toGRPC(), nil
 }
 
-// GetdoctorsIds returns a list of doctors' ids with given filters and pagination
-// Requires authentication. If authentication is not valid, codes.Unauthenticated is returned
-// Requires admin role. If roles is not sufficient, codes.PermissionDenied is returned
-// Offset value is used for a pagination. Required be a non-negative value
-// Limit value is used for a pagination. Required to be a positive value
-func (server doctorsServer) GetdoctorsIds(ctx context.Context, req *ppb.DoctorsRequest) (*ppb.PaginatedResponse, error) {
+// GetDoctorsIDs returns a list of doctors' ids with given filters and pagination.
+// Requires authentication. If authentication is not valid, codes.Unauthenticated is returned.
+// Requires admin role. If roles is not sufficient, codes.PermissionDenied is returned.
+// Offset value is used for a pagination. Required be a non-negative value.
+// Limit value is used for a pagination. Required to be a positive value.
+func (server doctorsServer) GetDoctorsIDs(ctx context.Context,
+	req *dpb.DoctorsRequest) (*dpb.PaginatedResponse, error) {
 	claims, err := server.VerifyToken(ctx, req.GetToken())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
@@ -76,38 +79,38 @@ func (server doctorsServer) GetdoctorsIds(ctx context.Context, req *ppb.DoctorsR
 		return nil, status.Error(codes.PermissionDenied, permissionDeniedMessage)
 	}
 
-	if req.Offset < 0 {
+	if req.GetOffset() < 0 {
 		return nil, status.Error(codes.InvalidArgument, "offset has to be a non-negative integer")
 	}
-	if req.Limit <= 0 {
+	if req.GetLimit() <= 0 {
 		return nil, status.Error(codes.InvalidArgument, "limit has to be a positive integer")
 	}
-	if req.Limit > maxPaginationLimit {
+	if req.GetLimit() > maxPaginationLimit {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("maximum allowed limit values is %d", maxPaginationLimit))
 	}
 
 	var ids []int32
-	baseQuery := server.db.NewSelect().Model((*doctor)(nil)).Column("id")
+	baseQuery := server.db.NewSelect().Model((*Doctor)(nil)).Column("id")
 	err = baseQuery.
-		Offset(int(req.Offset)).
-		Limit(int(req.Limit)).
+		Offset(int(req.GetOffset())).
+		Limit(int(req.GetLimit())).
 		Scan(ctx, &ids)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Errorf("failed to fetch users: %w", err).Error())
+		return nil, status.Error(codes.Internal, fmt.Errorf("failed to fetch doctors: %w", err).Error())
 	}
 	count, err := baseQuery.Count(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Errorf("failed to count users: %w", err).Error())
+		return nil, status.Error(codes.Internal, fmt.Errorf("failed to count doctors: %w", err).Error())
 	}
 
-	return &ppb.PaginatedResponse{
+	return &dpb.PaginatedResponse{
 		Count:   int32(count),
 		Results: ids,
 	}, nil
 }
 
-// createdoctorsServer initializes a doctorsServer with all the necessary fields.
-func createdoctorsServer() (*doctorsServer, error) {
+// createDoctorsServer initializes a doctorsServer with all the necessary fields.
+func createDoctorsServer() (*doctorsServer, error) {
 	base, err := ms.CreateBaseServiceServer()
 	if err != nil {
 		return nil, err
@@ -146,7 +149,7 @@ func createdoctorsServer() (*doctorsServer, error) {
 }
 
 func main() {
-	service, err := createdoctorsServer()
+	service, err := createDoctorsServer()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -162,10 +165,10 @@ func main() {
 	}
 
 	srv := grpc.NewServer()
-	ppb.RegisterDoctorServiceServer(srv, service)
+	dpb.RegisterDoctorServiceServer(srv, service)
 
 	log.Println("Server listening on :" + service.GetPort())
-	if err := srv.Serve(listen); err != nil {
+	if err = srv.Serve(listen); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
