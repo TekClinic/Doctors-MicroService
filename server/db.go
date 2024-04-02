@@ -14,7 +14,7 @@ type Doctor struct {
 	Name         string
 	Gender       dpb.Doctor_Gender
 	PhoneNumber  string
-	Specialities string `bun:",array"`
+	Specialities string
 	SpecialNote  string
 }
 
