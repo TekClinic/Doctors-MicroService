@@ -7,6 +7,8 @@ package doctors;
 service DoctorService {
   rpc GetDoctor(DoctorRequest) returns (Doctor);
   rpc GetDoctorsIDs(DoctorsRequest) returns (PaginatedResponse);
+  rpc CreateDoctor(CreateDoctorRequest) returns (DoctorID);
+
 }
 
 message DoctorRequest {
@@ -20,9 +22,22 @@ message DoctorsRequest {
   int32 offset = 3;
 }
 
+message CreateDoctorRequest {
+  string token = 1;
+  string name = 2;
+  Doctor.Gender gender = 3;
+  string phone_number = 4;
+  string specialities = 5;
+  string special_note = 10;
+}
+
 message PaginatedResponse {
   int32 count = 1;
   repeated int32 results = 2;
+}
+
+message DoctorID {
+  int32 id = 1;
 }
 
 message Doctor {
