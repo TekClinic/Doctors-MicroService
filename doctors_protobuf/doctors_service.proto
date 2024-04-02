@@ -37,6 +37,6 @@ message Doctor {
   string name = 3;
   Gender gender = 4;
   string phone_number = 5;
-  string specialities = 6;
+  repeated string specialities = 6;
   string special_note = 7;
 }
