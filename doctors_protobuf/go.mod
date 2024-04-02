@@ -1,4 +1,4 @@
-module github.com/TekClinic/Doctors-MicroService/doctors_protobuf
+module github.com/TekClinic/Doctors-MicroService
 
 go 1.22.0
 
