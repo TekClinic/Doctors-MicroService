@@ -1,4 +1,4 @@
-module main
+module github.com/TekClinic/Doctors-MicroService/server
 
 go 1.22.0
 
