@@ -66,7 +66,7 @@ func (x Doctor_Gender) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Doctor_Gender.Descriptor instead.
 func (Doctor_Gender) EnumDescriptor() ([]byte, []int) {
-	return file_doctors_service_proto_rawDescGZIP(), []int{5, 0}
+	return file_doctors_service_proto_rawDescGZIP(), []int{3, 0}
 }
 
 type DoctorRequest struct {
@@ -187,93 +187,6 @@ func (x *DoctorsRequest) GetOffset() int32 {
 	return 0
 }
 
-type CreateDoctorRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Token        string        `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	Name         string        `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Gender       Doctor_Gender `protobuf:"varint,3,opt,name=gender,proto3,enum=doctors.Doctor_Gender" json:"gender,omitempty"`
-	PhoneNumber  string        `protobuf:"bytes,4,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty"`
-	Specialities string        `protobuf:"bytes,5,opt,name=specialities,proto3" json:"specialities,omitempty"`
-	SpecialNote  string        `protobuf:"bytes,10,opt,name=special_note,json=specialNote,proto3" json:"special_note,omitempty"`
-}
-
-func (x *CreateDoctorRequest) Reset() {
-	*x = CreateDoctorRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_doctors_service_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CreateDoctorRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateDoctorRequest) ProtoMessage() {}
-
-func (x *CreateDoctorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_doctors_service_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateDoctorRequest.ProtoReflect.Descriptor instead.
-func (*CreateDoctorRequest) Descriptor() ([]byte, []int) {
-	return file_doctors_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *CreateDoctorRequest) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-func (x *CreateDoctorRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *CreateDoctorRequest) GetGender() Doctor_Gender {
-	if x != nil {
-		return x.Gender
-	}
-	return Doctor_UNSPECIFIED
-}
-
-func (x *CreateDoctorRequest) GetPhoneNumber() string {
-	if x != nil {
-		return x.PhoneNumber
-	}
-	return ""
-}
-
-func (x *CreateDoctorRequest) GetSpecialities() string {
-	if x != nil {
-		return x.Specialities
-	}
-	return ""
-}
-
-func (x *CreateDoctorRequest) GetSpecialNote() string {
-	if x != nil {
-		return x.SpecialNote
-	}
-	return ""
-}
-
 type PaginatedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -286,7 +199,7 @@ type PaginatedResponse struct {
 func (x *PaginatedResponse) Reset() {
 	*x = PaginatedResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_doctors_service_proto_msgTypes[3]
+		mi := &file_doctors_service_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -299,7 +212,7 @@ func (x *PaginatedResponse) String() string {
 func (*PaginatedResponse) ProtoMessage() {}
 
 func (x *PaginatedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_doctors_service_proto_msgTypes[3]
+	mi := &file_doctors_service_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -312,7 +225,7 @@ func (x *PaginatedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaginatedResponse.ProtoReflect.Descriptor instead.
 func (*PaginatedResponse) Descriptor() ([]byte, []int) {
-	return file_doctors_service_proto_rawDescGZIP(), []int{3}
+	return file_doctors_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *PaginatedResponse) GetCount() int32 {
@@ -327,53 +240,6 @@ func (x *PaginatedResponse) GetResults() []int32 {
 		return x.Results
 	}
 	return nil
-}
-
-type DoctorID struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id int32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *DoctorID) Reset() {
-	*x = DoctorID{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_doctors_service_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DoctorID) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DoctorID) ProtoMessage() {}
-
-func (x *DoctorID) ProtoReflect() protoreflect.Message {
-	mi := &file_doctors_service_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DoctorID.ProtoReflect.Descriptor instead.
-func (*DoctorID) Descriptor() ([]byte, []int) {
-	return file_doctors_service_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *DoctorID) GetId() int32 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
 }
 
 type Doctor struct {
@@ -393,7 +259,7 @@ type Doctor struct {
 func (x *Doctor) Reset() {
 	*x = Doctor{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_doctors_service_proto_msgTypes[5]
+		mi := &file_doctors_service_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -406,7 +272,7 @@ func (x *Doctor) String() string {
 func (*Doctor) ProtoMessage() {}
 
 func (x *Doctor) ProtoReflect() protoreflect.Message {
-	mi := &file_doctors_service_proto_msgTypes[5]
+	mi := &file_doctors_service_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +285,7 @@ func (x *Doctor) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Doctor.ProtoReflect.Descriptor instead.
 func (*Doctor) Descriptor() ([]byte, []int) {
-	return file_doctors_service_proto_rawDescGZIP(), []int{5}
+	return file_doctors_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Doctor) GetId() int32 {
@@ -535,30 +401,25 @@ func file_doctors_service_proto_rawDescGZIP() []byte {
 }
 
 var file_doctors_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_doctors_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_doctors_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_doctors_service_proto_goTypes = []interface{}{
-	(Doctor_Gender)(0),          // 0: doctors.Doctor.Gender
-	(*DoctorRequest)(nil),       // 1: doctors.DoctorRequest
-	(*DoctorsRequest)(nil),      // 2: doctors.DoctorsRequest
-	(*CreateDoctorRequest)(nil), // 3: doctors.CreateDoctorRequest
-	(*PaginatedResponse)(nil),   // 4: doctors.PaginatedResponse
-	(*DoctorID)(nil),            // 5: doctors.DoctorID
-	(*Doctor)(nil),              // 6: doctors.Doctor
+	(Doctor_Gender)(0),        // 0: doctors.Doctor.Gender
+	(*DoctorRequest)(nil),     // 1: doctors.DoctorRequest
+	(*DoctorsRequest)(nil),    // 2: doctors.DoctorsRequest
+	(*PaginatedResponse)(nil), // 3: doctors.PaginatedResponse
+	(*Doctor)(nil),            // 4: doctors.Doctor
 }
 var file_doctors_service_proto_depIdxs = []int32{
-	0, // 0: doctors.CreateDoctorRequest.gender:type_name -> doctors.Doctor.Gender
-	0, // 1: doctors.Doctor.gender:type_name -> doctors.Doctor.Gender
-	1, // 2: doctors.DoctorService.GetDoctor:input_type -> doctors.DoctorRequest
-	2, // 3: doctors.DoctorService.GetDoctorsIDs:input_type -> doctors.DoctorsRequest
-	3, // 4: doctors.DoctorService.CreateDoctor:input_type -> doctors.CreateDoctorRequest
-	6, // 5: doctors.DoctorService.GetDoctor:output_type -> doctors.Doctor
-	4, // 6: doctors.DoctorService.GetDoctorsIDs:output_type -> doctors.PaginatedResponse
-	5, // 7: doctors.DoctorService.CreateDoctor:output_type -> doctors.DoctorID
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 0: doctors.Doctor.gender:type_name -> doctors.Doctor.Gender
+	1, // 1: doctors.DoctorService.GetDoctor:input_type -> doctors.DoctorRequest
+	2, // 2: doctors.DoctorService.GetDoctorsIDs:input_type -> doctors.DoctorsRequest
+	4, // 3: doctors.DoctorService.GetDoctor:output_type -> doctors.Doctor
+	3, // 4: doctors.DoctorService.GetDoctorsIDs:output_type -> doctors.PaginatedResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_doctors_service_proto_init() }
@@ -592,18 +453,6 @@ func file_doctors_service_proto_init() {
 			}
 		}
 		file_doctors_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateDoctorRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_doctors_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PaginatedResponse); i {
 			case 0:
 				return &v.state
@@ -615,19 +464,7 @@ func file_doctors_service_proto_init() {
 				return nil
 			}
 		}
-		file_doctors_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DoctorID); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_doctors_service_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_doctors_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Doctor); i {
 			case 0:
 				return &v.state
@@ -646,7 +483,7 @@ func file_doctors_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_doctors_service_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

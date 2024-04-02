@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	DoctorService_GetDoctor_FullMethodName     = "/doctors.DoctorService/GetDoctor"
 	DoctorService_GetDoctorsIDs_FullMethodName = "/doctors.DoctorService/GetDoctorsIDs"
-
 )
 
 // DoctorServiceClient is the client API for DoctorService service.
@@ -30,7 +29,6 @@ const (
 type DoctorServiceClient interface {
 	GetDoctor(ctx context.Context, in *DoctorRequest, opts ...grpc.CallOption) (*Doctor, error)
 	GetDoctorsIDs(ctx context.Context, in *DoctorsRequest, opts ...grpc.CallOption) (*PaginatedResponse, error)
-	CreateDoctor(ctx context.Context, in *CreateDoctorRequest, opts ...grpc.CallOption) (*DoctorID, error)
 }
 
 type doctorServiceClient struct {
@@ -65,7 +63,6 @@ func (c *doctorServiceClient) GetDoctorsIDs(ctx context.Context, in *DoctorsRequ
 type DoctorServiceServer interface {
 	GetDoctor(context.Context, *DoctorRequest) (*Doctor, error)
 	GetDoctorsIDs(context.Context, *DoctorsRequest) (*PaginatedResponse, error)
-	CreateDoctor(context.Context, *CreateDoctorRequest) (*DoctorID, error)
 	mustEmbedUnimplementedDoctorServiceServer()
 }
 
@@ -78,9 +75,6 @@ func (UnimplementedDoctorServiceServer) GetDoctor(context.Context, *DoctorReques
 }
 func (UnimplementedDoctorServiceServer) GetDoctorsIDs(context.Context, *DoctorsRequest) (*PaginatedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDoctorsIDs not implemented")
-}
-func (UnimplementedDoctorServiceServer) CreateDoctor(context.Context, *CreateDoctorRequest) (*DoctorID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateDoctor not implemented")
 }
 func (UnimplementedDoctorServiceServer) mustEmbedUnimplementedDoctorServiceServer() {}
 
@@ -131,24 +125,6 @@ func _DoctorService_GetDoctorsIDs_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DoctorService_CreateDoctor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateDoctorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DoctorServiceServer).CreateDoctor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: DoctorService_CreateDoctor_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DoctorServiceServer).CreateDoctor(ctx, req.(*CreateDoctorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // DoctorService_ServiceDesc is the grpc.ServiceDesc for DoctorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -163,10 +139,6 @@ var DoctorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDoctorsIDs",
 			Handler:    _DoctorService_GetDoctorsIDs_Handler,
-		},
-		{
-			MethodName: "CreateDoctor",
-			Handler:    _DoctorService_CreateDoctor_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
