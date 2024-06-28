@@ -3,7 +3,7 @@ module github.com/TekClinic/Doctors-MicroService/server
 go 1.22.0
 
 require (
-	github.com/TekClinic/Doctors-MicroService/doctors_protobuf v0.1.2
+	github.com/TekClinic/Doctors-MicroService/doctors_protobuf v0.1.3
 	github.com/TekClinic/MicroService-Lib v0.1.1
 	github.com/uptrace/bun v1.2.1
 	github.com/uptrace/bun/dialect/pgdialect v1.2.1

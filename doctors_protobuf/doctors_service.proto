@@ -4,23 +4,27 @@ option go_package = "github.com/TekClinic/Doctors-MicroService/doctors_protobuf"
 
 package doctors;
 
-service DoctorService {
-  rpc GetDoctor(DoctorRequest) returns (Doctor);
-  rpc GetDoctorsIDs(DoctorsRequest) returns (PaginatedResponse);
+service DoctorsService {
+  rpc GetDoctor(GetDoctorRequest) returns (GetDoctorResponse);
+  rpc GetDoctorsIDs(GetDoctorsIDsRequest) returns (GetDoctorsIDsResponse);
 }
 
-message DoctorRequest {
+message GetDoctorRequest {
   string token = 1;
-  int64 id = 2;
+  int32 id = 2;
 }
 
-message DoctorsRequest {
+message GetDoctorResponse {
+  Doctor doctor = 1;
+}
+
+message GetDoctorsIDsRequest {
   string token = 1;
   int32 limit = 2;
   int32 offset = 3;
 }
 
-message PaginatedResponse {
+message GetDoctorsIDsResponse {
   int32 count = 1;
   repeated int32 results = 2;
 }

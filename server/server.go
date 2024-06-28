@@ -19,9 +19,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// doctorsServer is an implementation of GRPC Doctor microservice. It provides access to database via db field.
+// doctorsServer is an implementation of GRPC Doctor microservice. It provides access to a database via db field.
 type doctorsServer struct {
-	dpb.UnimplementedDoctorServiceServer
+	dpb.UnimplementedDoctorsServiceServer
 	ms.BaseServiceServer
 	db *bun.DB
 }
@@ -42,9 +42,9 @@ const (
 
 // GetDoctor returns a Doctor that corresponds to the given id.
 // Requires authentication. If authentication is not valid, codes.Unauthenticated is returned.
-// Requires admin role. If roles is not sufficient, codes.PermissionDenied is returned.
-// If Doctor with a given id doesn't exist, codes.NotFound is returned.
-func (server doctorsServer) GetDoctor(ctx context.Context, req *dpb.DoctorRequest) (*dpb.Doctor, error) {
+// Requires an admin role. If roles are insufficient, codes.PermissionDenied is returned.
+// If a Doctor with a given id doesn't exist, codes.NotFound is returned.
+func (server doctorsServer) GetDoctor(ctx context.Context, req *dpb.GetDoctorRequest) (*dpb.GetDoctorResponse, error) {
 	claims, err := server.VerifyToken(ctx, req.GetToken())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
@@ -61,16 +61,18 @@ func (server doctorsServer) GetDoctor(ctx context.Context, req *dpb.DoctorReques
 		}
 		return nil, status.Error(codes.Internal, fmt.Errorf("failed to fetch a doctor by id: %w", err).Error())
 	}
-	return doctor.toGRPC(), nil
+	return &dpb.GetDoctorResponse{
+		Doctor: doctor.toGRPC(),
+	}, nil
 }
 
 // GetDoctorsIDs returns a list of doctors' ids with given filters and pagination.
 // Requires authentication. If authentication is not valid, codes.Unauthenticated is returned.
-// Requires admin role. If roles is not sufficient, codes.PermissionDenied is returned.
-// Offset value is used for a pagination. Required be a non-negative value.
-// Limit value is used for a pagination. Required to be a positive value.
+// Requires an admin role. If roles are insufficient, codes.PermissionDenied is returned.
+// Offset value is used for pagination. Required be a non-negative value.
+// Limit value is used for pagination. Required to be a positive value.
 func (server doctorsServer) GetDoctorsIDs(ctx context.Context,
-	req *dpb.DoctorsRequest) (*dpb.PaginatedResponse, error) {
+	req *dpb.GetDoctorsIDsRequest) (*dpb.GetDoctorsIDsResponse, error) {
 	claims, err := server.VerifyToken(ctx, req.GetToken())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
@@ -103,7 +105,7 @@ func (server doctorsServer) GetDoctorsIDs(ctx context.Context,
 		return nil, status.Error(codes.Internal, fmt.Errorf("failed to count doctors: %w", err).Error())
 	}
 
-	return &dpb.PaginatedResponse{
+	return &dpb.GetDoctorsIDsResponse{
 		Count:   int32(count),
 		Results: ids,
 	}, nil
@@ -165,7 +167,7 @@ func main() {
 	}
 
 	srv := grpc.NewServer()
-	dpb.RegisterDoctorServiceServer(srv, service)
+	dpb.RegisterDoctorsServiceServer(srv, service)
 
 	log.Println("Server listening on :" + service.GetPort())
 	if err = srv.Serve(listen); err != nil {

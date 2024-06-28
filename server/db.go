@@ -9,13 +9,13 @@ import (
 
 // Doctor defines a schema of doctors.
 type Doctor struct {
-	ID           int32 `bun:",pk,autoincrement"`
-	Active       bool
-	Name         string
-	Gender       dpb.Doctor_Gender
-	PhoneNumber  string
-	Specialities []string
-	SpecialNote  string
+	ID           int32             `bun:",pk,autoincrement"`
+	Active       bool              ``
+	Name         string            `validate:"required,min=1,max=100"`
+	Gender       dpb.Doctor_Gender ``
+	PhoneNumber  string            `validate:"omitempty,e164"`
+	Specialities []string          `bun:",array"`
+	SpecialNote  string            `validate:"max=500"`
 }
 
 // toGRPC returns a GRPC version of Doctor.
