@@ -7,6 +7,8 @@ package doctors;
 service DoctorsService {
   rpc GetDoctor(GetDoctorRequest) returns (GetDoctorResponse);
   rpc GetDoctorsIDs(GetDoctorsIDsRequest) returns (GetDoctorsIDsResponse);
+  rpc CreateDoctor(CreateDoctorRequest) returns (CreateDoctorResponse);
+  rpc DeleteDoctor(DeleteDoctorRequest) returns (DeleteDoctorResponse);
 }
 
 message GetDoctorRequest {
@@ -28,6 +30,26 @@ message GetDoctorsIDsResponse {
   int32 count = 1;
   repeated int32 results = 2;
 }
+
+message CreateDoctorRequest {
+  string token = 1;
+  string name = 2;
+  Doctor.Gender gender = 3;
+  string phone_number = 4;
+  repeated string specialities = 5;
+  string special_note = 6;
+}
+
+message CreateDoctorResponse {
+  int32 id = 1;
+}
+
+message DeleteDoctorRequest {
+  string token = 1;
+  int32 id = 2;
+}
+
+message DeleteDoctorResponse {}
 
 message Doctor {
   enum Gender {

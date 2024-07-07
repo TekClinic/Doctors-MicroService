@@ -10,6 +10,7 @@ import (
 
 	dpb "github.com/TekClinic/Doctors-MicroService/doctors_protobuf"
 	ms "github.com/TekClinic/MicroService-Lib"
+	"github.com/go-playground/validator/v10"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -24,6 +25,8 @@ type doctorsServer struct {
 	dpb.UnimplementedDoctorsServiceServer
 	ms.BaseServiceServer
 	db *bun.DB
+	// use a single instance of Validate, it caches struct info
+	validate *validator.Validate
 }
 
 const (
@@ -111,6 +114,66 @@ func (server doctorsServer) GetDoctorsIDs(ctx context.Context,
 	}, nil
 }
 
+// CreateDoctor creates a doctor with the given specifications.
+// Requires authentication. If authentication is not valid, codes.Unauthenticated is returned.
+// Requires an admin role. If roles are not sufficient, codes.PermissionDenied is returned.
+// If some argument is missing or not valid, codes.InvalidArgument is returned.
+func (server doctorsServer) CreateDoctor(ctx context.Context,
+	req *dpb.CreateDoctorRequest) (*dpb.CreateDoctorResponse, error) {
+	claims, err := server.VerifyToken(ctx, req.GetToken())
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	if !claims.HasRole("admin") {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMessage)
+	}
+
+	doctor := Doctor{
+		Active:       true,
+		Name:         req.GetName(),
+		Gender:       req.GetGender(),
+		PhoneNumber:  req.GetPhoneNumber(),
+		Specialities: req.GetSpecialities(),
+		SpecialNote:  req.GetSpecialNote(),
+	}
+	if err = server.validate.Struct(doctor); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	_, err = server.db.NewInsert().Model(&doctor).Exec(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Errorf("failed to create a doctor: %w", err).Error())
+	}
+
+	return &dpb.CreateDoctorResponse{Id: doctor.ID}, nil
+}
+
+// DeleteDoctor deletes a doctor with the given id.
+// Requires authentication. If authentication is not valid, codes.Unauthenticated is returned.
+// Requires an admin role. If roles are not sufficient, codes.PermissionDenied is returned.
+// If the doctor with the given id doesn't exist, codes.NotFound is returned.
+func (server doctorsServer) DeleteDoctor(ctx context.Context, req *dpb.DeleteDoctorRequest) (
+	*dpb.DeleteDoctorResponse, error) {
+	claims, err := server.VerifyToken(ctx, req.GetToken())
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	if !claims.HasRole("admin") {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMessage)
+	}
+
+	res, err := server.db.NewDelete().Model((*Doctor)(nil)).Where("id = ?", req.GetId()).Exec(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Errorf("failed to delete the doctor: %w", err).Error())
+	}
+	// if db supports affected rows count and no rows were affected, return not found
+	rows, err := res.RowsAffected()
+	if err == nil && rows == 0 {
+		return nil, status.Error(codes.NotFound, "doctor is not found")
+	}
+	return &dpb.DeleteDoctorResponse{}, nil
+}
+
 // createDoctorsServer initializes a doctorsServer with all the necessary fields.
 func createDoctorsServer() (*doctorsServer, error) {
 	base, err := ms.CreateBaseServiceServer()
@@ -147,7 +210,10 @@ func createDoctorsServer() (*doctorsServer, error) {
 		bundebug.WithVerbose(true),
 		bundebug.FromEnv(envBunDebugLevel),
 	))
-	return &doctorsServer{BaseServiceServer: base, db: db}, nil
+	return &doctorsServer{
+		BaseServiceServer: base,
+		db:                db,
+		validate:          validator.New(validator.WithRequiredStructEnabled())}, nil
 }
 
 func main() {
