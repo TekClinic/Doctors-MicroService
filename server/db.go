@@ -13,8 +13,8 @@ type Doctor struct {
 	Active       bool              ``
 	Name         string            `validate:"required,min=1,max=100"`
 	Gender       dpb.Doctor_Gender ``
-	PhoneNumber  string            `validate:"omitempty,e164"`
-	Specialities []string          `bun:",array"`
+	PhoneNumber  string            `validate:"required,e164"`
+	Specialities []string          `bun:",array" validate:"max=30"`
 	SpecialNote  string            `validate:"max=500"`
 }
 
