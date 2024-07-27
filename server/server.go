@@ -96,6 +96,15 @@ func (server doctorsServer) GetDoctorsIDs(ctx context.Context,
 
 	var ids []int32
 	baseQuery := server.db.NewSelect().Model((*Doctor)(nil)).Column("id")
+
+	if req.GetSearch() != "" {
+		// Postgres specific code. Use full-text search to search for patients.
+		baseQuery = baseQuery.
+			TableExpr("replace(websearch_to_tsquery('simple', ?)::text || ' ',''' ',''':*') query", req.GetSearch()).
+			Where("text_searchable @@ query::tsquery").
+			OrderExpr("ts_rank(text_searchable, query::tsquery) DESC")
+	}
+
 	err = baseQuery.
 		Offset(int(req.GetOffset())).
 		Limit(int(req.GetLimit())).

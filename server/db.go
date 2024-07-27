@@ -42,5 +42,23 @@ func createSchemaIfNotExists(ctx context.Context, db *bun.DB) error {
 			return err
 		}
 	}
+
+	// Postgres specific code. Add a text_searchable column for full-text search.
+	_, err := db.NewRaw(
+		"CREATE OR REPLACE FUNCTION immutable_array_to_string(text[]) " +
+			"RETURNS text as $$ SELECT array_to_string($1, ','); $$ LANGUAGE sql IMMUTABLE;" +
+			"ALTER TABLE doctors " +
+			"ADD COLUMN IF NOT EXISTS text_searchable tsvector " +
+			"GENERATED ALWAYS AS " +
+			"(" +
+			"setweight(to_tsvector('simple', coalesce(phone_number, '')), 'A')   || " +
+			"setweight(to_tsvector('simple', coalesce(name, '')), 'B')           || " +
+			"setweight(to_tsvector('simple', immutable_array_to_string(coalesce(specialities, '{}'))), 'C')   || " +
+			"setweight(to_tsvector('simple', coalesce(special_note, '')), 'C')" +
+			") STORED").Exec(ctx)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
