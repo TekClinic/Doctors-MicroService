@@ -182,6 +182,43 @@ func (server doctorsServer) DeleteDoctor(ctx context.Context, req *dpb.DeleteDoc
 	return &dpb.DeleteDoctorResponse{}, nil
 }
 
+// UpdateDoctor updates a doctor with the given id and data.
+// Requires authentication. If authentication is not valid, codes.Unauthenticated is returned.
+// Requires an admin role. If roles are not sufficient, codes.PermissionDenied is returned.
+// If the doctor with the given id doesn't exist, codes.NotFound is returned.
+func (server doctorsServer) UpdateDoctor(ctx context.Context, req *dpb.UpdateDoctorRequest) (
+	*dpb.UpdateDoctorResponse, error) {
+	claims, err := server.VerifyToken(ctx, req.GetToken())
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	if !claims.HasRole("admin") {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMessage)
+	}
+
+	doctor := fromGRPC(req.GetDoctor())
+	if err = server.validate.Struct(doctor); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if doctor.ID == 0 {
+		return nil, status.Error(codes.InvalidArgument, "Doctor ID is required")
+	}
+
+	res, err := server.db.NewUpdate().Model(&doctor).WherePK().Exec(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Errorf("failed to update a doctor: %w", err).Error())
+	}
+
+	// if db supports affected rows count and no rows were affected, return not found
+	rows, err := res.RowsAffected()
+	if err == nil && rows == 0 {
+		return nil, status.Error(codes.NotFound, "doctor is not found")
+	}
+
+	return &dpb.UpdateDoctorResponse{Id: doctor.ID}, nil
+}
+
 // createDoctorsServer initializes a doctorsServer with all the necessary fields.
 func createDoctorsServer() (*doctorsServer, error) {
 	base, err := ms.CreateBaseServiceServer()

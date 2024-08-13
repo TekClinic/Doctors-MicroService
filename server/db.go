@@ -31,6 +31,19 @@ func (doctor Doctor) toGRPC() *dpb.Doctor {
 	}
 }
 
+// fromGRPC creates a Doctor from a GRPC version.
+func fromGRPC(d *dpb.Doctor) Doctor {
+	return Doctor{
+		ID:           d.GetId(),
+		Active:       d.GetActive(),
+		Name:         d.GetName(),
+		Gender:       d.GetGender(),
+		PhoneNumber:  d.GetPhoneNumber(),
+		Specialities: d.GetSpecialities(),
+		SpecialNote:  d.GetSpecialNote(),
+	}
+}
+
 // createSchemaIfNotExists creates all required schemas for Doctor microservice.
 func createSchemaIfNotExists(ctx context.Context, db *bun.DB) error {
 	models := []interface{}{

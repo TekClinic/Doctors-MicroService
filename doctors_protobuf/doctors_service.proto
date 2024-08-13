@@ -9,6 +9,7 @@ service DoctorsService {
   rpc GetDoctorsIDs(GetDoctorsIDsRequest) returns (GetDoctorsIDsResponse);
   rpc CreateDoctor(CreateDoctorRequest) returns (CreateDoctorResponse);
   rpc DeleteDoctor(DeleteDoctorRequest) returns (DeleteDoctorResponse);
+  rpc UpdateDoctor(UpdateDoctorRequest) returns (UpdateDoctorResponse);
 }
 
 message GetDoctorRequest {
@@ -51,6 +52,15 @@ message DeleteDoctorRequest {
 }
 
 message DeleteDoctorResponse {}
+
+message UpdateDoctorRequest {
+  string token = 1;
+  Doctor doctor = 2;
+}
+
+message UpdateDoctorResponse {
+  int32 id = 1;
+}
 
 message Doctor {
   enum Gender {
