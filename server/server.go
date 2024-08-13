@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net"
+
+	"go.uber.org/zap"
 
 	dpb "github.com/TekClinic/Doctors-MicroService/doctors_protobuf"
 	ms "github.com/TekClinic/MicroService-Lib"
@@ -14,7 +15,6 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
-	"github.com/uptrace/bun/extra/bundebug"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,11 +30,10 @@ type doctorsServer struct {
 }
 
 const (
-	envDBAddress     = "DB_ADDR"
-	envDBUser        = "DB_USER"
-	envDBDatabase    = "DB_DATABASE"
-	envDBPassword    = "DB_PASSWORD"
-	envBunDebugLevel = "BUN_DEBUG"
+	envDBAddress  = "DB_ADDR"
+	envDBUser     = "DB_USER"
+	envDBDatabase = "DB_DATABASE"
+	envDBPassword = "DB_PASSWORD"
 
 	applicationName = "doctors"
 
@@ -212,13 +211,10 @@ func createDoctorsServer() (*doctorsServer, error) {
 		pgdriver.WithPassword(password),
 		pgdriver.WithDatabase(database),
 		pgdriver.WithApplicationName(applicationName),
-		pgdriver.WithInsecure(true),
+		pgdriver.WithInsecure(!ms.HasSecureConnection()),
 	)
 	db := bun.NewDB(sql.OpenDB(connector), pgdialect.New())
-	db.AddQueryHook(bundebug.NewQueryHook(
-		bundebug.WithVerbose(true),
-		bundebug.FromEnv(envBunDebugLevel),
-	))
+	db.AddQueryHook(ms.GetDBQueryHook())
 	return &doctorsServer{
 		BaseServiceServer: base,
 		db:                db,
@@ -228,24 +224,24 @@ func createDoctorsServer() (*doctorsServer, error) {
 func main() {
 	service, err := createDoctorsServer()
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Fatal("Failed to create a patient server", zap.Error(err))
 	}
 
 	err = createSchemaIfNotExists(context.Background(), service.db)
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Fatal("Failed to create a schema", zap.Error(err))
 	}
 
 	listen, err := net.Listen("tcp", ":"+service.GetPort())
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		zap.L().Fatal("Failed to listen", zap.Error(err))
 	}
 
 	srv := grpc.NewServer()
 	dpb.RegisterDoctorsServiceServer(srv, service)
 
-	log.Println("Server listening on :" + service.GetPort())
+	zap.L().Info("Server listening on :" + service.GetPort())
 	if err = srv.Serve(listen); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+		zap.L().Fatal("Failed to serve", zap.Error(err))
 	}
 }
