@@ -26,6 +26,7 @@ type DoctorsServiceClient interface {
 	GetDoctorsIDs(ctx context.Context, in *GetDoctorsIDsRequest, opts ...grpc.CallOption) (*GetDoctorsIDsResponse, error)
 	CreateDoctor(ctx context.Context, in *CreateDoctorRequest, opts ...grpc.CallOption) (*CreateDoctorResponse, error)
 	DeleteDoctor(ctx context.Context, in *DeleteDoctorRequest, opts ...grpc.CallOption) (*DeleteDoctorResponse, error)
+	UpdateDoctor(ctx context.Context, in *UpdateDoctorRequest, opts ...grpc.CallOption) (*UpdateDoctorResponse, error)
 }
 
 type doctorsServiceClient struct {
@@ -72,6 +73,15 @@ func (c *doctorsServiceClient) DeleteDoctor(ctx context.Context, in *DeleteDocto
 	return out, nil
 }
 
+func (c *doctorsServiceClient) UpdateDoctor(ctx context.Context, in *UpdateDoctorRequest, opts ...grpc.CallOption) (*UpdateDoctorResponse, error) {
+	out := new(UpdateDoctorResponse)
+	err := c.cc.Invoke(ctx, "/doctors.DoctorsService/UpdateDoctor", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DoctorsServiceServer is the server API for DoctorsService service.
 // All implementations must embed UnimplementedDoctorsServiceServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type DoctorsServiceServer interface {
 	GetDoctorsIDs(context.Context, *GetDoctorsIDsRequest) (*GetDoctorsIDsResponse, error)
 	CreateDoctor(context.Context, *CreateDoctorRequest) (*CreateDoctorResponse, error)
 	DeleteDoctor(context.Context, *DeleteDoctorRequest) (*DeleteDoctorResponse, error)
+	UpdateDoctor(context.Context, *UpdateDoctorRequest) (*UpdateDoctorResponse, error)
 	mustEmbedUnimplementedDoctorsServiceServer()
 }
 
@@ -98,6 +109,9 @@ func (UnimplementedDoctorsServiceServer) CreateDoctor(context.Context, *CreateDo
 }
 func (UnimplementedDoctorsServiceServer) DeleteDoctor(context.Context, *DeleteDoctorRequest) (*DeleteDoctorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDoctor not implemented")
+}
+func (UnimplementedDoctorsServiceServer) UpdateDoctor(context.Context, *UpdateDoctorRequest) (*UpdateDoctorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDoctor not implemented")
 }
 func (UnimplementedDoctorsServiceServer) mustEmbedUnimplementedDoctorsServiceServer() {}
 
@@ -184,6 +198,24 @@ func _DoctorsService_DeleteDoctor_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DoctorsService_UpdateDoctor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDoctorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DoctorsServiceServer).UpdateDoctor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/doctors.DoctorsService/UpdateDoctor",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DoctorsServiceServer).UpdateDoctor(ctx, req.(*UpdateDoctorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DoctorsService_ServiceDesc is the grpc.ServiceDesc for DoctorsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +238,10 @@ var DoctorsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteDoctor",
 			Handler:    _DoctorsService_DeleteDoctor_Handler,
+		},
+		{
+			MethodName: "UpdateDoctor",
+			Handler:    _DoctorsService_UpdateDoctor_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
