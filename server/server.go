@@ -56,7 +56,7 @@ func (server doctorsServer) GetDoctor(ctx context.Context, req *dpb.GetDoctorReq
 	}
 
 	doctor := new(Doctor)
-	err = server.db.NewSelect().Model(doctor).Where("? = ?", bun.Ident("id"), req.GetId()).Scan(ctx)
+	err = server.db.NewSelect().Model(doctor).Where("? = ?", bun.Ident("id"), req.GetId()).WhereAllWithDeleted().Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, "Doctor is not found")
@@ -205,7 +205,11 @@ func (server doctorsServer) UpdateDoctor(ctx context.Context, req *dpb.UpdateDoc
 		return nil, status.Error(codes.InvalidArgument, "Doctor ID is required")
 	}
 
-	res, err := server.db.NewUpdate().Model(&doctor).WherePK().Exec(ctx)
+	res, err := server.db.NewUpdate().
+		Model(&doctor).
+		ExcludeColumn("created_at", "deleted_at").
+		WherePK().
+		Exec(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Errorf("failed to update a doctor: %w", err).Error())
 	}

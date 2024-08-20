@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	dpb "github.com/TekClinic/Doctors-MicroService/doctors_protobuf"
 	"github.com/uptrace/bun"
@@ -16,6 +17,8 @@ type Doctor struct {
 	PhoneNumber  string            `validate:"required,e164"`
 	Specialities []string          `bun:",array" validate:"max=30"`
 	SpecialNote  string            `validate:"max=500"`
+	CreatedAt    time.Time         `bun:",nullzero,notnull,default:current_timestamp"`
+	DeletedAt    time.Time         `bun:",soft_delete,nullzero"`
 }
 
 // toGRPC returns a GRPC version of Doctor.
@@ -56,8 +59,16 @@ func createSchemaIfNotExists(ctx context.Context, db *bun.DB) error {
 		}
 	}
 
+	// Migration code. Add created_at and deleted_at columns to the doctor table for soft delete.
+	if _, err := db.NewRaw(
+		"ALTER TABLE doctors " +
+			"ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(), " +
+			"ADD COLUMN IF NOT EXISTS deleted_at timestamptz;").Exec(ctx); err != nil {
+		return err
+	}
+
 	// Postgres specific code. Add a text_searchable column for full-text search.
-	_, err := db.NewRaw(
+	if _, err := db.NewRaw(
 		"CREATE OR REPLACE FUNCTION immutable_array_to_string(text[]) " +
 			"RETURNS text as $$ SELECT array_to_string($1, ','); $$ LANGUAGE sql IMMUTABLE;" +
 			"ALTER TABLE doctors " +
@@ -68,8 +79,7 @@ func createSchemaIfNotExists(ctx context.Context, db *bun.DB) error {
 			"setweight(to_tsvector('simple', coalesce(name, '')), 'B')           || " +
 			"setweight(to_tsvector('simple', immutable_array_to_string(coalesce(specialities, '{}'))), 'C')   || " +
 			"setweight(to_tsvector('simple', coalesce(special_note, '')), 'C')" +
-			") STORED").Exec(ctx)
-	if err != nil {
+			") STORED").Exec(ctx); err != nil {
 		return err
 	}
 
